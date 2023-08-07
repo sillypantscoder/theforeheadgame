@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<style>
+html, body, #main {
+	height: 100%;
+}
+body {
+	margin: 0;
+	font-family: sans-serif;
+}
+.card {
+	background: blue;
+	border: 1em solid black;
+	border-radius: 2em;
+	height: calc(100% - 2em);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+.card div {
+	font-size: 2em;
+	color: white;
+	font-weight: bold;
+}
+		</style>
+	</head>
+	<body>
+		<div id="main"></div>
+		<script>
+var words = [
+	"Goober",
+	"Dad",
+	"Jason",
+	"Dad the goober",
+	"Jason the not goober"
+]
+
+
+
+// What? I like Python.
+const random = {
+	randomTo: (i) => {
+		return Math.floor(random.random() * i)
+	},
+	choice: (i) => {
+		return i[random.randomTo(i.length)]
+	},
+	randint: (start, stop) => {
+		return start + random.randomTo((stop - start) + 1)
+	},
+	random: () => {
+		return Math.random()
+	}
+}
+
+
+
+function showWord(w) {
+	document.querySelector("#main").innerText = ""
+	var e = document.createElement("div")
+	e.classList.add("card")
+	e.appendChild(document.createElement("div"))
+	e.children[0].innerText = w
+	document.querySelector("#main").appendChild(e)
+}
+showWord(words[0])
+		</script>
+	</body>
+</html>
