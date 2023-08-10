@@ -15,42 +15,40 @@ body {
 	border-radius: 2em;
 	height: calc(100% - 2em);
 	display: flex;
+	flex-direction: column;
 	justify-content: center;
 	align-items: center;
 }
 .card.success {
 	background: green;
 }
-.card div {
-	font-size: 2em;
+:is(.card, .results) div {
 	color: white;
+	font-size: 2em;
+}
+:is(.card, .results) div:first-child {
 	font-weight: bold;
+	margin-bottom: 1em;
 }
-		</style>
-		<style>
-.rotation {
-	width: calc(var(--amount) * 10em);
-	background: lime;
+#main:has( > .results) {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	height: max-content;
 }
-.rotation::after {
-	content: var(--samount);
-	height: 1em;
-	display: inline-block;
-	width: 100vw;
+.results {
+	background: blue;
+	border: 1em solid black;
+	border-radius: 2em;
+	height: calc(100% - 2em);
+	padding: 2em;
+	width: max-content;
 }
 		</style>
 	</head>
 	<body>
-		<div id="main">
-			<!-- <div id="rot0" class="rotation"></div>
-			<div id="rot1" class="rotation"></div>
-			<div id="rot2" class="rotation"></div>
-			<div id="rot3" class="rotation"></div> -->
-			<!-- <div id="rot4" class="rotation"></div>
-			<div id="rot5" class="rotation"></div>
-			<div id="rot6" class="rotation"></div> -->
-		</div>
-		<script>window.addEventListener("error", (e) => alert(`${e.stack}`))</script>
+		<div id="main"></div>
+		<script>window.addEventListener("error", (e) => alert(`${e.message} :${e.lineno}`))</script>
 		<script>
 var words = [
 	"Goober",
@@ -82,6 +80,42 @@ const random = {
 
 
 
+var screen = -1
+var gameActive = false
+var time = 30 * 1000
+var time_id = setInterval(() => {
+	if (!gameActive) return;
+	if (screen == 0) time -= 10
+	var e = document.querySelector("#timedisplay")
+	if (e) {
+		e.innerText = Math.floor(time / 1000)
+	}
+	if (time <= 0) {
+		showResults()
+	}
+}, 10);
+function showBegin() {
+	document.querySelector("#main").innerText = ""
+	var e = document.createElement("div")
+	e.classList.add("card")
+	e.appendChild(document.createElement("div"))
+	e.children[0].innerText = "Tap anywhere to begin"
+	document.querySelector("#main").appendChild(e)
+	e.addEventListener("click", () => {
+		e.appendChild(document.createElement("div"))
+		e.children[1].innerText = "3"
+		e.children[1].setAttribute("id", "timedisplay")
+		setTimeout((v) => {
+			v.innerText = "2"
+			setTimeout((v) => {
+				v.innerText = "1"
+				setTimeout(() => {
+					gameActive = true
+				}, 1000)
+			}, 1000, v)
+		}, 1000, e.children[1])
+	})
+}
 function showWord(w) {
 	current_word = w
 	document.querySelector("#main").innerText = ""
@@ -89,6 +123,8 @@ function showWord(w) {
 	e.classList.add("card")
 	e.appendChild(document.createElement("div"))
 	e.children[0].innerText = w
+	e.appendChild(document.createElement("div"))
+	e.children[1].setAttribute("id", "timedisplay")
 	document.querySelector("#main").appendChild(e)
 }
 function showSuccess() {
@@ -100,15 +136,30 @@ function showSuccess() {
 	e.children[0].innerText = "Correct!"
 	document.querySelector("#main").appendChild(e)
 }
-var screen = 0
+function showResults() {
+	gameActive = false
+	document.querySelector("#main").innerText = ""
+	var e = document.createElement("div")
+	e.classList.add("results")
+	e.appendChild(document.createElement("div"))
+	e.children[0].innerText = "Time's up!"
+	for (var i = 0; i < success_words.length; i++) {
+		e.appendChild(document.createElement("div"))
+		e.children[i + 1].innerText = success_words[i]
+	}
+	document.querySelector("#main").appendChild(e)
+}
 function screenWord() {
+	var finished = false;
 	if (screen < 0) {
 		screen += 1
-		if (screen == 0) showWord(random.choice(words))
+		if (screen == 0) finished = true;
 	} else if (screen > 0) {
 		screen -= 1
-		if (screen == 0) showWord(random.choice(words))
+		if (screen == 0) finished = true;
 	}
+	if (!finished) return;
+	showWord(random.choice(words))
 }
 function screenSuccess() {
 	if (screen >= 0) {
@@ -117,68 +168,17 @@ function screenSuccess() {
 	}
 	screen = -60
 }
+showBegin()
 
 
-
-// const options = { frequency: 60, referenceFrame: "device" };
-// const sensor = new AbsoluteOrientationSensor(options);
-
-// Promise.all([
-// 	navigator.permissions.query({ name: "accelerometer" }),
-// 	navigator.permissions.query({ name: "magnetometer" }),
-// 	navigator.permissions.query({ name: "gyroscope" }),
-// ]).then((results) => {
-// 	if (results.every((result) => result.state === "granted")) {
-// 		sensor.start();
-// 	} else {
-// 		console.log("No permissions to use AbsoluteOrientationSensor.");
-// 	}
-// });
-
-// sensor.addEventListener("reading", () => {
-// 	console.log(sensor.quaternion)
-// });
-// sensor.addEventListener("error", (error) => {
-// 	if (event.error.name === "NotReadableError") {
-// 		console.error("Sensor is not available.");
-// 	}
-// });
-// function alphaBetaGammaToQuaternion(alpha, beta, gamma) {
-// 	var rad = Math.PI / 180;
-// 	var phi = alpha * rad;
-// 	var theta = beta * rad;
-// 	var psi = gamma * rad;
-
-// 	var _x = phi * 0.5;
-// 	var _y = theta * 0.5;
-// 	var _z = psi * 0.5;
-
-// 	var cX = Math.cos(_x);
-// 	var cY = Math.cos(_y);
-// 	var cZ = Math.cos(_z);
-
-// 	var sX = Math.sin(_x);
-// 	var sY = Math.sin(_y);
-// 	var sZ = Math.sin(_z);
-
-// 	return [
-// 		cX * cY * cZ - sX * sY * sZ,
-// 		cX * cZ * sY - cY * sX * sZ,
-// 		cX * cY * sZ + cZ * sX * sY,
-// 		cY * cZ * sX + cX * sY * sZ
-// 	];
-// }
 window.addEventListener("deviceorientation", handleOrientation, true);
 function handleOrientation(e) {
-	// console.log("a=", Math.floor(e.alpha / 45) * 45, "b=", Math.floor(e.beta / 45) * 45, "c=", Math.floor(e.gamma / 45) * 45)
-	// document.querySelector("#rot0").setAttribute("style", `--samount: "alpha: ${e.alpha}"; --amount: ${(e.alpha + 180) / 100};`)
-	// document.querySelector("#rot1").setAttribute("style", `--samount: "beta: ${e.beta}"; --amount: ${(e.beta + 180) / 100};`) // ${e.beta>10 ? " background: red;" : ""}
-	// document.querySelector("#rot2").setAttribute("style", `--samount: "gamma: ${e.gamma}"; --amount: ${(e.gamma + 180) / 100};`)
+	if (!gameActive) return;
+	if (time < 0) {
+		return;
+	}
 	var amt = e.gamma
 	if (amt < 0) amt += 180
-	// document.querySelector("#rot3").setAttribute("style", `--samount: "amt: ${amt}"; --amount: ${amt / 100};`)
-	// if (e.beta > 10) screenSuccess()
-	// else screenWord()
 	if (amt < 60) screenSuccess()
 	// else if (amt > 150) screenSkip()
 	else screenWord()
