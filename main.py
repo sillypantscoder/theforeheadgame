@@ -1,8 +1,9 @@
 # A basic Python web server that will serve files in "public_files/".
-
+# Also serves the list of sets, and the "sets" JSON files.
 
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import os
+import json
 
 hostName = "0.0.0.0"
 serverPort = 7298 # chosen at random
@@ -25,24 +26,48 @@ def write_file(filename, content):
 	f.close()
 
 def get(path):
-	if os.path.isfile("public_files/" + path):
+	qpath = path.split("?")[0]
+	if path == "/sets": # LIST OF SETS
+		sets = [
+			{"filename": f[:-5], "displayname": json.loads(read_file(os.path.join("sets", f)))["name"]}
+			for f in os.listdir("sets")
+		]
+		return {
+			"status": 200,
+			"headers": {
+				"Content-Type": "application/json"
+			},
+			"content": json.dumps(sets)
+		}
+	elif qpath.startswith("/set/"):
+		setname = qpath[5:] + ".json"
+		set = json.loads(read_file(os.path.join("sets", setname)))
+		return {
+			"status": 200,
+			"headers": {
+				"Content-Type": "application/json"
+			},
+			"content": json.dumps(set)
+		}
+	elif os.path.isfile("public_files/" + qpath): # SERVING DIRECT FILES
 		return {
 			"status": 200,
 			"headers": {
 				"Content-Type": {
-					"html": "text/html"
-				}[path.split(".")[-1]]
+					"html": "text/html",
+					"json": "application/json"
+				}[qpath.split(".")[-1]]
 			},
-			"content": bin_read_file("public_files/" + path)
+			"content": bin_read_file("public_files/" + qpath)
 		}
-	elif path.endswith("/"):
-		if os.path.isdir("public_files/" + path) and os.path.isfile("public_files/" + path + "/index.html"):
+	elif qpath.endswith("/"): # INDEX.HTML
+		if os.path.isdir("public_files/" + qpath) and os.path.isfile("public_files/" + qpath + "/index.html"):
 			return {
 				"status": 200,
 				"headers": {
 					"Content-Type": "text/html"
 				},
-				"content": read_file("public_files/" + path + "/index.html")
+				"content": read_file("public_files/" + qpath + "/index.html")
 			}
 		else:
 			return {

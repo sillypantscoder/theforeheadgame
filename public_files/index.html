@@ -2,187 +2,45 @@
 <html>
 	<head>
 		<style>
-html, body, #main {
-	height: 100%;
-}
 body {
-	margin: 0;
 	font-family: sans-serif;
 }
-.card {
+a {
 	background: blue;
-	border: 1em solid black;
-	border-radius: 2em;
-	height: calc(100% - 2em);
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-}
-.card.success {
-	background: green;
-}
-:is(.card, .results) div {
 	color: white;
-	font-size: 2em;
-}
-:is(.card, .results) div:first-child {
-	font-weight: bold;
-	margin-bottom: 1em;
-}
-#main:has( > .results) {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	height: max-content;
-}
-.results {
-	background: blue;
-	border: 1em solid black;
-	border-radius: 2em;
-	height: calc(100% - 2em);
-	padding: 2em;
-	width: max-content;
+	margin: 0.5em;
+	padding: 0.5em;
+	border-radius: 0.5em;
+	text-decoration: none;
+	display: inline-block;
 }
 		</style>
 	</head>
 	<body>
-		<div id="main"></div>
-		<script>window.addEventListener("error", (e) => alert(`${e.message} :${e.lineno}`))</script>
+		<h2>The Forehead Game</h2>
+		<div id="sets">Loading...</div>
 		<script>
-var words = [
-	"Goober",
-	"Dad",
-	"Jason",
-	"Dad the goober",
-	"Jason the not goober"
-]
-var current_word = ""
-var success_words = []
-
-
-
-// What? I like Python.
-const random = {
-	randomTo: (i) => {
-		return Math.floor(random.random() * i)
-	},
-	choice: (i) => {
-		return i[random.randomTo(i.length)]
-	},
-	randint: (start, stop) => {
-		return start + random.randomTo((stop - start) + 1)
-	},
-	random: () => {
-		return Math.random()
+var x = new XMLHttpRequest()
+x.open("GET", "/sets")
+x.addEventListener("loadend", (e) => {
+	var sets = JSON.parse(e.target.responseText)
+	document.querySelector("#sets").innerText = "" // remove the loading message
+	// sets is a list of:
+	// {
+	//     "filename": clicking on the set should redirect to /game.html?set=THISVALUE
+	//     "displayname": the name to show to the user
+	// }
+	for (var i = 0; i < sets.length; i++) {
+		var e = document.createElement("div")
+		e.appendChild(document.createElement("a"))
+		e.children[0].innerText = "Play"
+		e.children[0].setAttribute("href", `/game.html?set=${sets[i].filename}`)
+		e.appendChild(document.createElement("b"))
+		e.children[1].innerText = sets[i].displayname
+		document.querySelector("#sets").appendChild(e)
 	}
-}
-
-
-
-var screen = -1
-var gameActive = false
-var time = 30 * 1000
-var time_id = setInterval(() => {
-	if (!gameActive) return;
-	if (screen == 0) time -= 10
-	var e = document.querySelector("#timedisplay")
-	if (e) {
-		e.innerText = Math.floor(time / 1000)
-	}
-	if (time <= 0) {
-		showResults()
-	}
-}, 10);
-function showBegin() {
-	document.querySelector("#main").innerText = ""
-	var e = document.createElement("div")
-	e.classList.add("card")
-	e.appendChild(document.createElement("div"))
-	e.children[0].innerText = "Tap anywhere to begin"
-	document.querySelector("#main").appendChild(e)
-	e.addEventListener("click", () => {
-		e.appendChild(document.createElement("div"))
-		e.children[1].innerText = "3"
-		e.children[1].setAttribute("id", "timedisplay")
-		setTimeout((v) => {
-			v.innerText = "2"
-			setTimeout((v) => {
-				v.innerText = "1"
-				setTimeout(() => {
-					gameActive = true
-				}, 1000)
-			}, 1000, v)
-		}, 1000, e.children[1])
-	})
-}
-function showWord(w) {
-	current_word = w
-	document.querySelector("#main").innerText = ""
-	var e = document.createElement("div")
-	e.classList.add("card")
-	e.appendChild(document.createElement("div"))
-	e.children[0].innerText = w
-	e.appendChild(document.createElement("div"))
-	e.children[1].setAttribute("id", "timedisplay")
-	document.querySelector("#main").appendChild(e)
-}
-function showSuccess() {
-	document.querySelector("#main").innerText = ""
-	var e = document.createElement("div")
-	e.classList.add("card")
-	e.classList.add("success")
-	e.appendChild(document.createElement("div"))
-	e.children[0].innerText = "Correct!"
-	document.querySelector("#main").appendChild(e)
-}
-function showResults() {
-	gameActive = false
-	document.querySelector("#main").innerText = ""
-	var e = document.createElement("div")
-	e.classList.add("results")
-	e.appendChild(document.createElement("div"))
-	e.children[0].innerText = "Time's up!"
-	for (var i = 0; i < success_words.length; i++) {
-		e.appendChild(document.createElement("div"))
-		e.children[i + 1].innerText = success_words[i]
-	}
-	document.querySelector("#main").appendChild(e)
-}
-function screenWord() {
-	var finished = false;
-	if (screen < 0) {
-		screen += 1
-		if (screen == 0) finished = true;
-	} else if (screen > 0) {
-		screen -= 1
-		if (screen == 0) finished = true;
-	}
-	if (!finished) return;
-	showWord(random.choice(words))
-}
-function screenSuccess() {
-	if (screen >= 0) {
-		showSuccess()
-		success_words.push(current_word)
-	}
-	screen = -60
-}
-showBegin()
-
-
-window.addEventListener("deviceorientation", handleOrientation, true);
-function handleOrientation(e) {
-	if (!gameActive) return;
-	if (time < 0) {
-		return;
-	}
-	var amt = e.gamma
-	if (amt < 0) amt += 180
-	if (amt < 60) screenSuccess()
-	// else if (amt > 150) screenSkip()
-	else screenWord()
-}
+})
+x.send()
 		</script>
 	</body>
 </html>
