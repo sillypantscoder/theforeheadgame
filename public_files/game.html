@@ -22,6 +22,9 @@ body {
 .card.success {
 	background: green;
 }
+.card.pass {
+	background: darkgoldenrod;
+}
 :is(.card, .results) div {
 	color: white;
 	font-size: 2em;
@@ -57,6 +60,10 @@ body {
 }
 .results div:has( :is(a, button)) {
 	padding-top: 1em;
+}
+.result-passed {
+	opacity: 0.7;
+	font-style: italic;
 }
 		</style>
 	</head>
@@ -122,6 +129,7 @@ function showBegin() {
 		// add the click listener
 		function e_click() {
 			e.removeEventListener("click", e_click)
+			e.children[0].innerText = "Get ready!"
 			e.appendChild(document.createElement("div"))
 			e.children[1].innerText = "3"
 			e.children[1].setAttribute("id", "timedisplay")
@@ -159,7 +167,17 @@ function showSuccess() {
 	e.children[0].innerText = "Correct!"
 	document.querySelector("#main").appendChild(e)
 }
+function showPass() {
+	document.querySelector("#main").innerText = ""
+	var e = document.createElement("div")
+	e.classList.add("card")
+	e.classList.add("pass")
+	e.appendChild(document.createElement("div"))
+	e.children[0].innerText = "Pass"
+	document.querySelector("#main").appendChild(e)
+}
 function showResults() {
+	if (screen == 0) success_words.push([current_word, false])
 	gameActive = false
 	document.querySelector("#main").innerText = ""
 	var e = document.createElement("div")
@@ -168,7 +186,8 @@ function showResults() {
 	e.children[0].innerText = "Time's up!"
 	for (var i = 0; i < success_words.length; i++) {
 		e.appendChild(document.createElement("div"))
-		e.children[i + 1].innerText = success_words[i]
+		e.children[i + 1].innerText = success_words[i][0]
+		if (!success_words[i][1]) e.children[i + 1].classList.add("result-passed")
 	}
 	e.appendChild(document.createElement("div"))
 	e.children[i + 1].appendChild(document.createElement("a"))
@@ -192,11 +211,18 @@ function screenWord() {
 	showWord(random.choice(words))
 }
 function screenSuccess() {
-	if (screen >= 0) {
+	if (screen == 0) {
 		showSuccess()
-		success_words.push(current_word)
+		success_words.push([current_word, true])
+		screen = -60
 	}
-	screen = -60
+}
+function screenPass() {
+	if (screen <= 0) {
+		showPass()
+		success_words.push([current_word, false])
+		screen = 60
+	}
 }
 showBegin()
 
@@ -210,7 +236,7 @@ function handleOrientation(e) {
 	var amt = e.gamma
 	if (amt < 0) amt += 180
 	if (amt < 60) screenSuccess()
-	// else if (amt > 150) screenSkip()
+	else if (amt > 150) screenPass()
 	else screenWord()
 }
 		</script>
