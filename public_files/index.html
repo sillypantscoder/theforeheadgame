@@ -19,6 +19,7 @@ a {
 	<body>
 		<h2>The Forehead Game</h2>
 		<div id="sets">Loading...</div>
+		<div><a href="/editor.html">New Set</a></div>
 		<script>
 var x = new XMLHttpRequest()
 x.open("GET", "/sets")
@@ -35,8 +36,11 @@ x.addEventListener("loadend", (e) => {
 		e.appendChild(document.createElement("a"))
 		e.children[0].innerText = "Play"
 		e.children[0].setAttribute("href", `/game.html?set=${sets[i].filename}`)
+		e.appendChild(document.createElement("a"))
+		e.children[1].innerText = "Edit"
+		e.children[1].setAttribute("href", `/editor.html?set=${sets[i].filename}`)
 		e.appendChild(document.createElement("b"))
-		e.children[1].innerText = sets[i].displayname
+		e.children[2].innerText = sets[i].displayname
 		document.querySelector("#sets").appendChild(e)
 	}
 })

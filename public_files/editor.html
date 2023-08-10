@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<style>
+body {
+	font-family: sans-serif;
+}
+textarea {
+	width: 100%;
+	height: 20em;
+}
+		</style>
+	</head>
+	<body>
+		<h2>Edit</h2>
+		<p>Name: <input id="name"></p>
+		<p>Cards:</p>
+		<textarea id="cards"></textarea>
+		<p><button onclick="location.replace('/')">Cancel</button><button onclick="save()">Save</button></p>
+		<script>
+var setname = location.search.substr(5)
+if (setname != "") {
+	var x = new XMLHttpRequest()
+	x.open("GET", "/set/" + setname)
+	x.addEventListener("loadend", (event) => {
+		// load the set
+		var set = JSON.parse(event.target.responseText)
+		document.querySelector("#name").value = set.name
+		document.querySelector("#cards").value = set.cards.join("\n")
+	})
+	x.send()
+}
+function save() {
+	var x = new XMLHttpRequest()
+	x.open("POST", "/edit/" + setname + Math.floor(Math.random() * 10000).toString())
+	x.addEventListener("loadend", (e) => location.replace("/"))
+	x.send(JSON.stringify({
+		"name": document.querySelector("#name").value,
+		"cards": document.querySelector("#cards").value.split("\n")
+	}))
+}
+		</script>
+	</body>
+</html>

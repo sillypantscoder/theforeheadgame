@@ -74,6 +74,7 @@ body {
 var words = []
 var current_word = ""
 var success_words = []
+var allowed_words = []
 
 
 
@@ -124,6 +125,7 @@ function showBegin() {
 		// load the set
 		var set = JSON.parse(event.target.responseText)
 		words = set.cards
+		allowed_words.push(...words)
 		// set the "tap anywhere to begin" message
 		e.children[0].innerText = "Tap anywhere to begin"
 		// add the click listener
@@ -208,7 +210,10 @@ function screenWord() {
 		if (screen == 0) finished = true;
 	}
 	if (!finished) return;
-	showWord(random.choice(words))
+	if (allowed_words.length <= 0) allowed_words.push(...words)
+	var newWord = random.choice(allowed_words);
+	allowed_words.splice(allowed_words.indexOf(newWord), 1)
+	showWord(newWord)
 }
 function screenSuccess() {
 	if (screen == 0) {

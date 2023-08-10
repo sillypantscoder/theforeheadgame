@@ -87,14 +87,19 @@ def get(path):
 		}
 
 def post(path, body):
-	if False:
-		pass
+	if path.startswith("/edit"):
+		setname = path[6:]
+		setdata = json.loads(body.decode("UTF-8"))
+		write_file("sets/" + setname + ".json", json.dumps(setdata, indent='\t'))
+		return {
+			"status": 200,
+			"headers": {},
+			"content": f""
+		}
 	else:
 		return {
 			"status": 404,
-			"headers": {
-				"Content-Type": "text/html"
-			},
+			"headers": {},
 			"content": f""
 		}
 
