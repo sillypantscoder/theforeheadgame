@@ -27,7 +27,7 @@ body {
 }
 :is(.card, .results) div {
 	color: white;
-	font-size: 2em;
+	font-size: 3em;
 }
 :is(.card, .results) div:first-child {
 	font-weight: bold;
@@ -101,7 +101,7 @@ var gameActive = false
 var time = 30 * 1000
 var time_id = setInterval(() => {
 	if (!gameActive) return;
-	if (screen == 0) time -= 10
+	if (screen == 0) time -= 100
 	var e = document.querySelector("#timedisplay")
 	if (e) {
 		e.innerText = Math.floor(time / 1000)
@@ -109,8 +109,8 @@ var time_id = setInterval(() => {
 	if (time <= 0) {
 		showResults()
 	}
-}, 10);
-function showBegin() {
+}, 100);
+async function showBegin() {
 	// display the loading message
 	document.querySelector("#main").innerText = ""
 	var e = document.createElement("div")
@@ -118,36 +118,50 @@ function showBegin() {
 	e.appendChild(document.createElement("div"))
 	e.children[0].innerText = "Loading..."
 	document.querySelector("#main").appendChild(e)
-	// download the set
-	var x = new XMLHttpRequest()
-	x.open("GET", "/set/" + location.search.substr(5))
-	x.addEventListener("loadend", (event) => {
-		// load the set
-		var set = JSON.parse(event.target.responseText)
-		words = set.cards
-		allowed_words.push(...words)
-		// set the "tap anywhere to begin" message
-		e.children[0].innerText = "Tap anywhere to begin"
-		// add the click listener
-		function e_click() {
-			e.removeEventListener("click", e_click)
-			e.children[0].innerText = "Get ready!"
-			e.appendChild(document.createElement("div"))
-			e.children[1].innerText = "3"
-			e.children[1].setAttribute("id", "timedisplay")
-			setTimeout((v) => {
-				v.innerText = "2"
-				setTimeout((v) => {
-					v.innerText = "1"
-					setTimeout(() => {
-						gameActive = true
-					}, 1000)
-				}, 1000, v)
-			}, 1000, e.children[1])
+	// wait for orientation sensors to activate
+	var listener = () => DeviceOrientationEvent.requestPermission();
+	e.addEventListener("click", listener)
+	await new Promise((resolve) => {
+		function sensor() {
+			resolve(true)
+			e.removeEventListener("click", listener)
+			window.removeEventListener("deviceorientation", sensor)
 		}
-		e.addEventListener("click", e_click)
+		window.addEventListener("deviceorientation", sensor)
 	})
-	x.send()
+	// download the set
+	var set = await new Promise((resolve) => {
+		var x = new XMLHttpRequest()
+		x.open("GET", "/set/" + location.search.substr(5))
+		x.addEventListener("loadend", (event) => {
+			resolve(JSON.parse(event.target.responseText))
+		})
+		x.send()
+	})
+	// load the set
+	var set = JSON.parse(event.target.responseText)
+	words = set.cards
+	allowed_words.push(...words)
+	// set the "tap anywhere to begin" message
+	e.children[0].innerText = "Tap anywhere to begin"
+	// add the click listener
+	function e_click() {
+		e.removeEventListener("click", e_click)
+		e.children[0].innerText = "Get ready!"
+		e.appendChild(document.createElement("div"))
+		e.children[1].innerText = "3"
+		e.children[1].setAttribute("id", "timedisplay")
+		setTimeout((v) => {
+			v.innerText = "2"
+			setTimeout((v) => {
+				v.innerText = "1"
+				setTimeout(() => {
+					gameActive = true
+				}, 1000)
+			}, 1000, v)
+		}, 1000, e.children[1])
+	}
+	e.addEventListener("click", e_click)
 }
 function showWord(w) {
 	current_word = w

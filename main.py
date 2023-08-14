@@ -4,6 +4,7 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import os
 import json
+import datetime
 
 hostName = "0.0.0.0"
 serverPort = 7298 # chosen at random
@@ -25,6 +26,11 @@ def write_file(filename, content):
 	f.write(content)
 	f.close()
 
+def file_mod_date(filename):
+	stamp = os.path.getmtime(filename)
+	date = datetime.datetime.fromtimestamp(stamp)
+	return date
+
 def get(path):
 	qpath = path.split("?")[0]
 	if path == "/sets": # LIST OF SETS
@@ -32,6 +38,7 @@ def get(path):
 			{"filename": f[:-5], "displayname": json.loads(read_file(os.path.join("sets", f)))["name"]}
 			for f in os.listdir("sets")
 		]
+		sets = sorted(sets, key=lambda x: os.path.getmtime("sets/" + x["filename"] + ".json"))
 		return {
 			"status": 200,
 			"headers": {
@@ -90,6 +97,11 @@ def post(path, body):
 	if path.startswith("/edit"):
 		setname = path[6:]
 		setdata = json.loads(body.decode("UTF-8"))
+		if os.path.exists("sets/" + setname + ".json"): return {
+			"status": 404,
+			"headers": {},
+			"content": f""
+		}
 		write_file("sets/" + setname + ".json", json.dumps(setdata, indent='\t'))
 		return {
 			"status": 200,

@@ -25,7 +25,10 @@ if (setname != "") {
 	x.addEventListener("loadend", (event) => {
 		// load the set
 		var set = JSON.parse(event.target.responseText)
-		document.querySelector("#name").value = set.name
+		var newname = set.name
+		if (newname.match(/ V[0-9]+$/i) == null) newname += " V2"
+		else newname = newname.substring(0, newname.length - newname.match(/[0-9]+$/i)[0].length) + String(Number(newname.match(/[0-9]+$/i)[0]) + 1)
+		document.querySelector("#name").value = newname
 		document.querySelector("#cards").value = set.cards.join("\n")
 	})
 	x.send()
