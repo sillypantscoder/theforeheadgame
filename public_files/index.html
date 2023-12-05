@@ -20,6 +20,7 @@ a {
 		<h2>The Forehead Game</h2>
 		<div id="sets">Loading...</div>
 		<div><a href="/editor.html">New Set</a></div>
+		<div>Time: <input type="number" min="20" max="120" step="1" value="60" oninput="edit_time(this)"> seconds</div>
 		<script>
 var x = new XMLHttpRequest()
 x.open("GET", "/sets")
@@ -35,16 +36,24 @@ x.addEventListener("loadend", (e) => {
 		var e = document.createElement("div")
 		e.appendChild(document.createElement("a"))
 		e.children[0].innerText = "Play"
-		e.children[0].setAttribute("href", `/game.html?set=${sets[i].filename}`)
+		e.children[0].dataset.setname = sets[i].filename
+		e.children[0].setAttribute("href", `/game.html?set=${sets[i].filename}&time=60`)
 		e.appendChild(document.createElement("a"))
 		e.children[1].innerText = "Edit"
-		e.children[1].setAttribute("href", `/editor.html?set=${sets[i].filename}`)
+		e.children[1].setAttribute("href", `/editor.html?set=${sets[i].filename}&load=true`)
 		e.appendChild(document.createElement("b"))
 		e.children[2].innerText = sets[i].displayname
 		document.querySelector("#sets").appendChild(e)
 	}
 })
 x.send()
+function edit_time(e) {
+	var v = e.valueAsNumber
+	var elms = [...document.querySelectorAll("#sets > div > a:first-child")]
+	for (var i = 0; i < elms.length; i++) {
+		elms[i].setAttribute("href", `/game.html?set=${elms[i].dataset.setname}&time=${v}`)
+	}
+}
 		</script>
 	</body>
 </html>

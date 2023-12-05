@@ -27,7 +27,7 @@ body {
 }
 :is(.card, .results) div {
 	color: white;
-	font-size: 3em;
+	font-size: 4em;
 }
 :is(.card, .results) div:first-child {
 	font-weight: bold;
@@ -70,6 +70,7 @@ body {
 	<body>
 		<div id="main"></div>
 		<script>window.addEventListener("error", (e) => alert(`${e.message} :${e.lineno}`))</script>
+		<script src="query.js"></script>
 		<script>
 var words = []
 var current_word = ""
@@ -98,7 +99,7 @@ const random = {
 
 var screen = -1
 var gameActive = false
-var time = 30 * 1000
+var time = Number(query["time"]) * 1000
 var time_id = setInterval(() => {
 	if (!gameActive) return;
 	if (screen == 0) time -= 100
@@ -132,7 +133,7 @@ async function showBegin() {
 	// download the set
 	var set = await new Promise((resolve) => {
 		var x = new XMLHttpRequest()
-		x.open("GET", "/set/" + location.search.substr(5))
+		x.open("GET", "/set/" + query["set"])
 		x.addEventListener("loadend", (event) => {
 			resolve(JSON.parse(event.target.responseText))
 		})
@@ -237,7 +238,7 @@ function screenSuccess() {
 	}
 }
 function screenPass() {
-	if (screen <= 0) {
+	if (screen == 0) {
 		showPass()
 		success_words.push([current_word, false])
 		screen = 60

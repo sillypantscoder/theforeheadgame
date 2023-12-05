@@ -37,6 +37,7 @@ def get(path):
 		sets = [
 			{"filename": f[:-5], "displayname": json.loads(read_file(os.path.join("sets", f)))["name"]}
 			for f in os.listdir("sets")
+			if (True if "deleted" in json.loads(read_file(os.path.join("sets", f))).keys() else print("aaaaa! Set does not contain 'deleted' parameter", f)) and not json.loads(read_file(os.path.join("sets", f)))["deleted"]
 		]
 		sets = sorted(sets, key=lambda x: os.path.getmtime("sets/" + x["filename"] + ".json"))
 		return {
@@ -62,7 +63,8 @@ def get(path):
 			"headers": {
 				"Content-Type": {
 					"html": "text/html",
-					"json": "application/json"
+					"json": "application/json",
+					"js": "text/javascript"
 				}[qpath.split(".")[-1]]
 			},
 			"content": bin_read_file("public_files/" + qpath)
@@ -102,6 +104,21 @@ def post(path, body):
 			"headers": {},
 			"content": f""
 		}
+		write_file("sets/" + setname + ".json", json.dumps(setdata, indent='\t'))
+		return {
+			"status": 200,
+			"headers": {},
+			"content": f""
+		}
+	if path.startswith("/delete"):
+		setname = path[8:]
+		if not os.path.exists("sets/" + setname + ".json"): return {
+			"status": 404,
+			"headers": {},
+			"content": f""
+		}
+		setdata = json.loads(read_file("sets/" + setname + ".json"))
+		setdata["deleted"] = True
 		write_file("sets/" + setname + ".json", json.dumps(setdata, indent='\t'))
 		return {
 			"status": 200,

@@ -17,29 +17,39 @@ textarea {
 		<p>Cards:</p>
 		<textarea id="cards"></textarea>
 		<p><button onclick="location.replace('/')">Cancel</button><button onclick="save()">Save</button></p>
+		<script src="query.js"></script>
 		<script>
-var setname = location.search.substr(5)
-if (setname != "") {
+if (query["load"] == "true") {
 	var x = new XMLHttpRequest()
-	x.open("GET", "/set/" + setname)
+	x.open("GET", "/set/" + query["set"])
 	x.addEventListener("loadend", (event) => {
 		// load the set
 		var set = JSON.parse(event.target.responseText)
 		var newname = set.name
 		if (newname.match(/ V[0-9]+$/i) == null) newname += " V2"
 		else newname = newname.substring(0, newname.length - newname.match(/[0-9]+$/i)[0].length) + String(Number(newname.match(/[0-9]+$/i)[0]) + 1)
-		document.querySelector("#name").value = newname
-		document.querySelector("#cards").value = set.cards.join("\n")
+		localStorage.setItem("name", newname)
+		localStorage.setItem("cards", set.cards.join("\n"))
+		location.replace("/editor.html?name=" + query["set"])
 	})
 	x.send()
+} else {
+	document.querySelector("#name").value = localStorage.getItem("name")
+	document.querySelector("#cards").value = localStorage.getItem("cards")
+	setInterval(saveStorage, 1000)
+}
+function saveStorage() {
+	localStorage.setItem("name", document.querySelector("#name").value)
+	localStorage.setItem("cards", document.querySelector("#cards").value)
 }
 function save() {
 	var x = new XMLHttpRequest()
-	x.open("POST", "/edit/" + setname + Math.floor(Math.random() * 10000).toString())
+	x.open("POST", "/edit/" + query["name"] + Math.floor(Math.random() * 10000).toString())
 	x.addEventListener("loadend", (e) => location.replace("/"))
 	x.send(JSON.stringify({
 		"name": document.querySelector("#name").value,
-		"cards": document.querySelector("#cards").value.split("\n")
+		"cards": document.querySelector("#cards").value.split("\n"),
+		"deleted": false
 	}))
 }
 		</script>
