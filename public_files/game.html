@@ -118,8 +118,11 @@ async function showBegin() {
 	e.classList.add("card")
 	e.appendChild(document.createElement("div"))
 	e.children[0].innerText = "Loading..."
+	e.appendChild(document.createElement("div"))
+	e.children[1].setAttribute("style", `font-size: 2em;`)
 	document.querySelector("#main").appendChild(e)
 	// wait for orientation sensors to activate
+	e.children[1].innerHTML = "Starting orientation sensors..."
 	var listener = () => DeviceOrientationEvent.requestPermission();
 	e.addEventListener("click", listener)
 	await new Promise((resolve) => {
@@ -131,9 +134,10 @@ async function showBegin() {
 		window.addEventListener("deviceorientation", sensor)
 	})
 	// download the set
+	e.children[1].innerHTML = "Downloading the set..."
 	var set = await new Promise((resolve) => {
 		var x = new XMLHttpRequest()
-		x.open("GET", "/set/" + query["set"])
+		x.open("GET", "set/" + query["set"])
 		x.addEventListener("loadend", (event) => {
 			resolve(JSON.parse(event.target.responseText))
 		})
@@ -145,6 +149,7 @@ async function showBegin() {
 	allowed_words.push(...words)
 	// set the "tap anywhere to begin" message
 	e.children[0].innerText = "Tap anywhere to begin"
+	e.children[1].remove()
 	// add the click listener
 	function e_click() {
 		e.removeEventListener("click", e_click)
@@ -209,7 +214,7 @@ function showResults() {
 	e.appendChild(document.createElement("div"))
 	e.children[i + 1].appendChild(document.createElement("a"))
 	e.children[i + 1].children[0].innerText = "Home"
-	e.children[i + 1].children[0].setAttribute("href", "/")
+	e.children[i + 1].children[0].setAttribute("href", ".")
 	e.children[i + 1].appendChild(document.createElement("button"))
 	e.children[i + 1].children[1].innerText = "Play Again"
 	e.children[i + 1].children[1].setAttribute("onclick", "location.reload()")

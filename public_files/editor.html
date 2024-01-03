@@ -21,7 +21,7 @@ textarea {
 		<script>
 if (query["load"] == "true") {
 	var x = new XMLHttpRequest()
-	x.open("GET", "/set/" + query["set"])
+	x.open("GET", "set/" + query["set"])
 	x.addEventListener("loadend", (event) => {
 		// load the set
 		var set = JSON.parse(event.target.responseText)
@@ -30,7 +30,7 @@ if (query["load"] == "true") {
 		else newname = newname.substring(0, newname.length - newname.match(/[0-9]+$/i)[0].length) + String(Number(newname.match(/[0-9]+$/i)[0]) + 1)
 		localStorage.setItem("name", newname)
 		localStorage.setItem("cards", set.cards.join("\n"))
-		location.replace("/editor.html?name=" + query["set"])
+		location.replace("editor.html?name=" + query["set"])
 	})
 	x.send()
 } else {
@@ -44,8 +44,8 @@ function saveStorage() {
 }
 function save() {
 	var x = new XMLHttpRequest()
-	x.open("POST", "/edit/" + query["name"] + Math.floor(Math.random() * 10000).toString())
-	x.addEventListener("loadend", (e) => location.replace("/"))
+	x.open("POST", "edit/" + query["name"] + Math.floor(Math.random() * 10000).toString())
+	x.addEventListener("loadend", (e) => location.replace("."))
 	x.send(JSON.stringify({
 		"name": document.querySelector("#name").value,
 		"cards": document.querySelector("#cards").value.split("\n"),
